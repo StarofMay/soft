@@ -174,15 +174,52 @@
             background-color: #86B049;
         }
         
-        .imgur-help {
+        .upload-help {
             font-size: 12px;
             color: #666;
             margin-top: 5px;
         }
         
-        .imgur-help a {
-            color: #1bb76e;
-            text-decoration: none;
+        .file-input-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .file-input-label {
+            display: block;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .file-input-label:hover {
+            background-color: #e0e0e0;
+            border-color: #999;
+        }
+        
+        .file-input {
+            position: absolute;
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            z-index: -1;
+        }
+        
+        .preview-container {
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            display: none;
+            margin: 0 auto;
         }
     </style>
 </head>
@@ -200,7 +237,7 @@
     </div>
     
     <!-- Modal for adding/editing artwork -->
-    <div class="modal" id="artworkModal">
+     <div class="modal" id="artworkModal">
         <div class="modal-content">
             <h2 id="modalTitle">Add New Artwork</h2>
             <form id="artworkForm">
@@ -210,11 +247,19 @@
                     <input type="text" id="artworkTitle" required>
                 </div>
                 <div class="form-group">
-                    <label for="artworkImageUrl">Imgur Image URL</label>
-                    <input type="url" id="artworkImageUrl" placeholder="https://i.imgur.com/example.jpg" required>
-                    <p class="imgur-help">
-                        Upload your image to <a href="https://imgur.com/upload" target="_blank">Imgur</a>, then paste the direct image URL here.
-                        <br>Right-click your Imgur image and select "Copy image address".
+                    <label>Upload Image</label>
+                    <div class="file-input-container">
+                        <label for="artworkImageUpload" class="file-input-label">
+                            Click to select an image file<br>
+                            (JPG, PNG, GIF - Max 5MB)
+                        </label>
+                        <input type="file" id="artworkImageUpload" class="file-input" accept="image/*" required>
+                    </div>
+                    <div class="preview-container">
+                        <img id="imagePreview" class="image-preview" alt="Image preview">
+                    </div>
+                    <p class="upload-help">
+                        Select an image file from your computer. The image will be stored in your browser.
                     </p>
                 </div>
                 <div class="form-group">
@@ -230,7 +275,6 @@
     </div>
     
     <script>
-        // Get or initialize artworks from localStorage
         let artworks = JSON.parse(localStorage.getItem('digitalArtworks')) || [
             { 
                 id: 1, 
@@ -241,13 +285,13 @@
             { 
                 id: 2, 
                 title: "Pop Art Study", 
-                imageUrl: "./works/digital/digital_2.png", 
+                imageUrl: "./works/digital/digital_3.png", 
                 description: "A simple color study mimicking vibrant pop art colors." 
             },
             { 
                 id: 3, 
                 title: "Comic Study", 
-                imageUrl: "./works/digital/digital_3.jpg", 
+                imageUrl: "./works/digital/digital_2.jpg", 
                 description: "A comic study inspired from Small Girl mv by Lee Young Ji." 
             },
             { 
@@ -263,7 +307,6 @@
                 description: "A fan art of the manga series Toilet-Bound." 
             }
         ];
-        
         // Save artworks to localStorage
         function saveArtworksToStorage() {
             localStorage.setItem('digitalArtworks', JSON.stringify(artworks));
@@ -278,8 +321,12 @@
         const cancelBtn = document.getElementById('cancelBtn');
         const artworkIdInput = document.getElementById('artworkId');
         const artworkTitleInput = document.getElementById('artworkTitle');
-        const artworkImageUrlInput = document.getElementById('artworkImageUrl');
+        const artworkImageUpload = document.getElementById('artworkImageUpload');
+        const imagePreview = document.getElementById('imagePreview');
         const artworkDescriptionInput = document.getElementById('artworkDescription');
+        
+        // Current image data for editing
+        let currentImageData = null;
         
         // Render artworks
         function renderArtworks() {
@@ -288,7 +335,11 @@
                 const artworkElement = document.createElement('div');
                 artworkElement.className = 'artwork';
                 artworkElement.innerHTML = `
-                    <img src="${artwork.imageUrl}" alt="${artwork.title}" onerror="this.src='https://via.placeholder.com/300x300?text=Image+Not+Found'">
+                    <div class="image-container" style="height: 300px; background: #f5f5f5; display: flex; justify-content: center; align-items: center;">
+                        <img src="${artwork.imageUrl}" alt="${artwork.title}" 
+                             style="max-width: 100%; max-height: 100%; object-fit: contain;"
+                             onerror="this.onerror=null; this.src='https://via.placeholder.com/300x300?text=Image+Not+Found';">
+                    </div>
                     <div class="artwork-info">
                         <h3 class="artwork-title">${artwork.title}</h3>
                         ${artwork.description ? `<p>${artwork.description}</p>` : ''}
@@ -317,11 +368,41 @@
             });
         }
         
+        // Preview uploaded image
+        artworkImageUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Check file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File is too large! Please select an image smaller than 5MB.');
+                this.value = '';
+                return;
+            }
+            
+            // Check file type
+            if (!file.type.match('image.*')) {
+                alert('Please select an image file (JPG, PNG, GIF)');
+                this.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                imagePreview.src = event.target.result;
+                imagePreview.style.display = 'block';
+                currentImageData = event.target.result; // Store the base64 data
+            };
+            reader.readAsDataURL(file);
+        });
+        
         // Add new artwork
         function addArtwork() {
             modalTitle.textContent = 'Add New Artwork';
             artworkForm.reset();
             artworkIdInput.value = '';
+            imagePreview.style.display = 'none';
+            currentImageData = null;
             artworkModal.style.display = 'flex';
         }
         
@@ -332,8 +413,13 @@
                 modalTitle.textContent = 'Edit Artwork';
                 artworkIdInput.value = artwork.id;
                 artworkTitleInput.value = artwork.title;
-                artworkImageUrlInput.value = artwork.imageUrl;
                 artworkDescriptionInput.value = artwork.description || '';
+                
+                // Show current image
+                imagePreview.src = artwork.imageUrl;
+                imagePreview.style.display = 'block';
+                currentImageData = artwork.imageUrl;
+                
                 artworkModal.style.display = 'flex';
             }
         }
@@ -352,15 +438,17 @@
             e.preventDefault();
             
             const id = artworkIdInput.value ? parseInt(artworkIdInput.value) : Date.now();
-            const title = artworkTitleInput.value;
-            const imageUrl = artworkImageUrlInput.value;
-            const description = artworkDescriptionInput.value;
+            const title = artworkTitleInput.value.trim();
+            const description = artworkDescriptionInput.value.trim();
             
-            // Basic URL validation
-            if (!imageUrl.match(/\.(jpeg|jpg|gif|png)$/i)) {
-                alert('Please enter a valid image URL (must end with .jpg, .jpeg, .gif, or .png)');
+            // Validate image
+            if (!currentImageData && !artworkIdInput.value) {
+                alert('Please select an image file');
                 return;
             }
+            
+            // For new artworks or when changing image in edit mode
+            const imageUrl = currentImageData || artworks.find(a => a.id === id)?.imageUrl;
             
             const artworkData = {
                 id,

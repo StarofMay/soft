@@ -174,15 +174,52 @@
             background-color: #86B049;
         }
         
-        .imgur-help {
+        .upload-help {
             font-size: 12px;
             color: #666;
             margin-top: 5px;
         }
         
-        .imgur-help a {
-            color: #1bb76e;
-            text-decoration: none;
+        .file-input-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .file-input-label {
+            display: block;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .file-input-label:hover {
+            background-color: #e0e0e0;
+            border-color: #999;
+        }
+        
+        .file-input {
+            position: absolute;
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            z-index: -1;
+        }
+        
+        .preview-container {
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            display: none;
+            margin: 0 auto;
         }
     </style>
 </head>
@@ -210,11 +247,19 @@
                     <input type="text" id="artworkTitle" required>
                 </div>
                 <div class="form-group">
-                    <label for="artworkImageUrl">Imgur Image URL</label>
-                    <input type="url" id="artworkImageUrl" placeholder="https://i.imgur.com/example.jpg" required>
-                    <p class="imgur-help">
-                        Upload your image to <a href="https://imgur.com/upload" target="_blank">Imgur</a>, then paste the direct image URL here.
-                        <br>Right-click your Imgur image and select "Copy image address".
+                    <label>Upload Image</label>
+                    <div class="file-input-container">
+                        <label for="artworkImageUpload" class="file-input-label">
+                            Click to select an image file<br>
+                            (JPG, PNG, GIF - Max 5MB)
+                        </label>
+                        <input type="file" id="artworkImageUpload" class="file-input" accept="image/*" required>
+                    </div>
+                    <div class="preview-container">
+                        <img id="imagePreview" class="image-preview" alt="Image preview">
+                    </div>
+                    <p class="upload-help">
+                        Select an image file from your computer. The image will be stored in your browser.
                     </p>
                 </div>
                 <div class="form-group">
@@ -230,7 +275,7 @@
     </div>
     
     <script>
-        let artworks = [
+        let artworks = JSON.parse(localStorage.getItem('traditionalArtworks')) || [
             { 
                 id: 1, 
                 title: "Mascot", 
@@ -262,6 +307,11 @@
                 description: "A corner of a page filled with doodles." 
             }
         ];
+
+        // Save artworks to localStorage
+        function saveArtworksToStorage() {
+            localStorage.setItem('traditionalArtworks', JSON.stringify(artworks));
+        }
         
         // DOM elements
         const artGallery = document.getElementById('artGallery');
@@ -272,7 +322,8 @@
         const cancelBtn = document.getElementById('cancelBtn');
         const artworkIdInput = document.getElementById('artworkId');
         const artworkTitleInput = document.getElementById('artworkTitle');
-        const artworkImageUrlInput = document.getElementById('artworkImageUrl');
+        const artworkImageUpload = document.getElementById('artworkImageUpload');
+        const imagePreview = document.getElementById('imagePreview');
         const artworkDescriptionInput = document.getElementById('artworkDescription');
         
         // Render artworks

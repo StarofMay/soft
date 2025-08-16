@@ -174,15 +174,40 @@
             background-color: #86B049;
         }
         
-        .imgur-help {
+        .upload-help {
             font-size: 12px;
             color: #666;
             margin-top: 5px;
         }
         
-        .imgur-help a {
-            color: #1bb76e;
-            text-decoration: none;
+        .file-input-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .file-input-label {
+            display: block;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .file-input-label:hover {
+            background-color: #e0e0e0;
+            border-color: #999;
+        }
+        
+        .file-input {
+            position: absolute;
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            z-index: -1;
         }
         
         .media-preview {
@@ -228,12 +253,18 @@
                     <input type="text" id="artworkTitle" required>
                 </div>
                 <div class="form-group">
-                    <label for="artworkMediaUrl">Media URL (GIF or Video)</label>
-                    <input type="url" id="artworkMediaUrl" placeholder="https://i.imgur.com/example.mp4" required>
+                    <label>Upload Animation</label>
+                    <div class="file-input-container">
+                        <label for="artworkMediaUpload" class="file-input-label">
+                            Click to select a media file<br>
+                            (MP4, GIF - Max 10MB)
+                        </label>
+                        <input type="file" id="artworkMediaUpload" class="file-input" 
+                               accept="video/mp4,image/gif" required>
+                    </div>
                     <div class="media-preview" id="mediaPreview"></div>
-                    <p class="imgur-help">
-                        <a href="https://imgur.com/upload" target="_blank">Imgur</a>
-                        <br> Supported formats: .gif, .mp4, .webm, .mov 
+                    <p class="upload-help">
+                        Select an animation file from your computer (MP4 or GIF format).
                     </p>
                 </div>
                 <div class="form-group">
@@ -249,7 +280,7 @@
     </div>
     
     <script>
-        let artworks = [
+        let artworks = JSON.parse(localStorage.getItem('animationArtworks')) || [
             { 
                 id: 1, 
                 title: "Firework", 
@@ -286,6 +317,10 @@
                 type: "gif"
             }
         ];
+        // Save artworks to localStorage
+        function saveArtworksToStorage() {
+            localStorage.setItem('animationArtworks', JSON.stringify(artworks));
+        }
         
         // DOM elements
         const artGallery = document.getElementById('artGallery');
@@ -296,9 +331,9 @@
         const cancelBtn = document.getElementById('cancelBtn');
         const artworkIdInput = document.getElementById('artworkId');
         const artworkTitleInput = document.getElementById('artworkTitle');
-        const artworkMediaUrlInput = document.getElementById('artworkMediaUrl');
-        const artworkDescriptionInput = document.getElementById('artworkDescription');
+        const artworkMediaUpload = document.getElementById('artworkMediaUpload');
         const mediaPreview = document.getElementById('mediaPreview');
+        const artworkDescriptionInput = document.getElementById('artworkDescription');
         
         // Render artworks
         function renderArtworks() {
@@ -309,19 +344,19 @@
                 
                 let mediaElement;
                 if (artwork.type === 'video') {
-                mediaElement = `
-                <video controls muted loop playsinline>
-                <source src="${artwork.mediaUrl}" type="video/mp4">
-                Your browser does not support HTML5 video.
-                </video>
-                `;
-            } else {
-            // For GIFs with local fallback
-            mediaElement = `
-            <img src="${artwork.mediaUrl}" alt="${artwork.title}" 
-                onerror="this.onerror=null; this.src='images/fallback.jpg'">
-            `;
-            }
+                    mediaElement = `
+                        <video controls muted loop playsinline>
+                            <source src="${artwork.mediaUrl}" type="video/mp4">
+                            Your browser does not support HTML5 video.
+                        </video>
+                    `;
+                } else {
+                    // For GIFs
+                    mediaElement = `
+                        <img src="${artwork.mediaUrl}" alt="${artwork.title}" 
+                            onerror="this.onerror=null; this.src='https://via.placeholder.com/300x300?text=Media+Not+Found'">
+                    `;
+                }
                 
                 artworkElement.innerHTML = `
                     ${mediaElement}
@@ -353,42 +388,50 @@
             });
         }
         
-        // Update media preview when URL changes
-        artworkMediaUrlInput.addEventListener('input', updateMediaPreview);
-        
-        function updateMediaPreview() {
-            const url = artworkMediaUrlInput.value.trim();
-            mediaPreview.innerHTML = '';
-    
-            if (!url) return;
-    
-            if (url.match(/\.(mp4|webm|mov)$/i)) {
-                const video = document.createElement('video');
-                video.controls = true;
-                video.muted = true;
-                video.autoplay = true;
-                video.loop = true;
-        
-                const source = document.createElement('source');
-                source.src = url;
-                source.type = 'video/mp4';
-                source.onerror = function() {
-                    mediaPreview.innerHTML = '<p>Video failed to load</p>';
-                };
-        
-                video.appendChild(source);
-                mediaPreview.appendChild(video);
-            } else if (url.match(/\.(gif)$/i)) {
-                const img = document.createElement('img');
-                img.src = url;
-                img.alt = "GIF preview";
-                img.onerror = function() {
-                    this.onerror = null;
-                    this.src = 'images/fallback.jpg';
-                };
-                mediaPreview.appendChild(img);
+        // Preview uploaded media
+        artworkMediaUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Check file size (max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('File is too large! Please select a file smaller than 10MB.');
+                this.value = '';
+                return;
             }
-        }
+            
+            // Check file type
+            if (!file.type.match(/(video\/mp4|image\/gif)/)) {
+                alert('Please select an MP4 video or GIF file');
+                this.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                mediaPreview.innerHTML = '';
+                
+                if (file.type.match('video/mp4')) {
+                    const video = document.createElement('video');
+                    video.controls = true;
+                    video.muted = true;
+                    video.autoplay = true;
+                    video.loop = true;
+                    video.src = event.target.result;
+                    mediaPreview.appendChild(video);
+                    currentMediaType = 'video';
+                } else {
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+                    img.alt = "GIF preview";
+                    mediaPreview.appendChild(img);
+                    currentMediaType = 'gif';
+                }
+                
+                currentMediaData = event.target.result; // Store the base64 data
+            };
+            reader.readAsDataURL(file);
+        });
         
         // Add new artwork
         function addArtwork() {
@@ -396,6 +439,8 @@
             artworkForm.reset();
             artworkIdInput.value = '';
             mediaPreview.innerHTML = '';
+            currentMediaData = null;
+            currentMediaType = null;
             artworkModal.style.display = 'flex';
         }
         
@@ -406,10 +451,29 @@
                 modalTitle.textContent = 'Edit Artwork';
                 artworkIdInput.value = artwork.id;
                 artworkTitleInput.value = artwork.title;
-                artworkMediaUrlInput.value = artwork.mediaUrl;
                 artworkDescriptionInput.value = artwork.description || '';
+                
+                // Show current media
+                mediaPreview.innerHTML = '';
+                if (artwork.type === 'video') {
+                    const video = document.createElement('video');
+                    video.controls = true;
+                    video.muted = true;
+                    video.autoplay = true;
+                    video.loop = true;
+                    video.src = artwork.mediaUrl;
+                    mediaPreview.appendChild(video);
+                } else {
+                    const img = document.createElement('img');
+                    img.src = artwork.mediaUrl;
+                    img.alt = artwork.title;
+                    mediaPreview.appendChild(img);
+                }
+                
+                currentMediaData = artwork.mediaUrl;
+                currentMediaType = artwork.type;
+                
                 artworkModal.style.display = 'flex';
-                updateMediaPreview();
             }
         }
         
@@ -417,18 +481,9 @@
         function deleteArtwork(id) {
             if (confirm('Are you sure you want to delete this artwork?')) {
                 artworks = artworks.filter(a => a.id !== id);
+                saveArtworksToStorage();
                 renderArtworks();
             }
-        }
-        
-        // Determine media type from URL
-        function getMediaType(url) {
-            if (url.match(/\.(mp4|webm|mov)$/i)) {
-                return 'video';
-            } else if (url.match(/\.(gif)$/i)) {
-                return 'gif';
-            }
-            return 'image';
         }
         
         // Save artwork (add or update)
@@ -436,16 +491,18 @@
             e.preventDefault();
             
             const id = artworkIdInput.value ? parseInt(artworkIdInput.value) : Date.now();
-            const title = artworkTitleInput.value;
-            const mediaUrl = artworkMediaUrlInput.value;
-            const description = artworkDescriptionInput.value;
-            const type = getMediaType(mediaUrl);
+            const title = artworkTitleInput.value.trim();
+            const description = artworkDescriptionInput.value.trim();
             
-            // Basic URL validation for videos and GIFs
-            if (!mediaUrl.match(/\.(gif|mp4|webm|mov)$/i)) {
-                alert('Please enter a valid media URL (must end with .gif, .mp4, .webm, or .mov)');
+            // Validate media
+            if (!currentMediaData && !artworkIdInput.value) {
+                alert('Please select a media file');
                 return;
             }
+            
+            // For new artworks or when changing media in edit mode
+            const mediaUrl = currentMediaData || artworks.find(a => a.id === id)?.mediaUrl;
+            const type = currentMediaType || artworks.find(a => a.id === id)?.type;
             
             const artworkData = {
                 id,
@@ -463,6 +520,7 @@
                 artworks.push(artworkData);
             }
             
+            saveArtworksToStorage();
             renderArtworks();
             artworkModal.style.display = 'none';
         }

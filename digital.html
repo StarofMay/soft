@@ -230,7 +230,8 @@
     </div>
     
     <script>
-        let artworks = [
+        // Get or initialize artworks from localStorage
+        let artworks = JSON.parse(localStorage.getItem('digitalArtworks')) || [
             { 
                 id: 1, 
                 title: "Flower Vase", 
@@ -262,6 +263,11 @@
                 description: "A fan art of the manga series Toilet-Bound." 
             }
         ];
+        
+        // Save artworks to localStorage
+        function saveArtworksToStorage() {
+            localStorage.setItem('digitalArtworks', JSON.stringify(artworks));
+        }
         
         // DOM elements
         const artGallery = document.getElementById('artGallery');
@@ -336,6 +342,7 @@
         function deleteArtwork(id) {
             if (confirm('Are you sure you want to delete this artwork?')) {
                 artworks = artworks.filter(a => a.id !== id);
+                saveArtworksToStorage();
                 renderArtworks();
             }
         }
@@ -370,6 +377,7 @@
                 artworks.push(artworkData);
             }
             
+            saveArtworksToStorage();
             renderArtworks();
             artworkModal.style.display = 'none';
         }

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Story Time</title>
+    <!-- Using a free favicon since original wasn't accessible -->
+    <link rel="icon" type="image/x-icon" href="https://icons.getbootstrap.com/assets/img/favicon.ico">
+    
+    <style>
+        /* Base styles */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header styles */
+        .header-container {
+            display: flex;
+            width: 100%;
+            flex-direction: column;
+            color: rgb(255, 255, 255);
+            background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1519681393784-d120267933ba');
+            background-size: cover;
+            background-position: center;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            position: relative;
+            text-align: left; 
+            font-family: 'Arial', sans-serif;
+            font-size: 35px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        /* Navigation styles */
+        .nav-container {
+            background-color: #343a40;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        ul.nav {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+        }
+        
+        ul.nav li {
+            margin: 0 15px;
+        }
+        
+        ul.nav li a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        ul.nav li a:hover {
+            background-color: #1966ff;
+            transform: translateY(-2px);
+        }
+        
+        /* Content sections */
+        .content-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .story-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .story-text {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .story-image {
+            flex: 0 0 300px;
+            text-align: center;
+        }
+        
+        .story-image img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Table styles */
+        .plant-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        .plant-table th, .plant-table td {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .plant-table th {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+        
+        .plant-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .plant-table tr:hover {
+            background-color: #26ff92;
+        }
+        
+        /* Quote styles */
+        .quote {
+            font-style: italic;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #1966ff;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .divine-quote {
+            color: #8b0000;
+            font-weight: bold;
+            padding: 15px;
+            background-color: #fff5f5;
+            border-left: 4px solid #8b0000;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        /* Footer styles */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #343a40;
+            color: white;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        
+        /* Iframe container */
+        .iframe-container {
+            margin: 20px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* List styles */
+        .custom-list {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .custom-list h3 {
+            color: #1966ff;
+            margin-top: 0;
+        }
+        
+        /* Color utilities */
+        .text-primary {
+            color: #1966ff;
+        }
+        
+        .bg-light {
+            background-color: #f8f9fa;
+        }
+        
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header with title and navigation -->
+        <div class="header-container">
+            <h1 style="-webkit-text-stroke: 0.9px #333; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Random Stories</h1>
+            <!-- Navigation bar -->
+            <ul class="nav">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#stories">Stories</a></li>
+                <li><a href="#gallery">Gallery</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+        
+        <!-- Tagline -->
+        <p style="font-size: 15px; color:rgb(78, 155, 255); text-align: center;">
+            It doesn't need to make sense ᕙ(  •̀ ᗜ •́  )ᕗ
+        </p>
+        
+        <hr style="border: 0; height: 1px; background: #ddd; margin: 20px 0;">
+        
+        <!-- Main content section -->
+        <div id="home" class="content-section">
+            <h2 style="color: #1966ff;">Welcome to Random Story Time</h2>
+            <p>Discover tales of wonder, mystery, and imagination. Each story is unique and takes you on a journey to different realms.</p>
+            
+            <!-- Iframe example -->
+            <div class="iframe-container">
+                <iframe width="100%" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+            
+            <!-- List example -->
+            <div class="custom-list">
+                <h3>Why you'll love our stories:</h3>
+                <ul>
+                    <li>Unique and original content</li>
+                    <li>Beautiful imagery and descriptions</li>
+                    <li>Characters you can relate to</li>
+                    <li>Unexpected twists and turns</li>
+                </ul>
+                
+                <h3>Top story categories:</h3>
+                <ol>
+                    <li>Fantasy adventures</li>
+                    <li>Mystery tales</li>
+                    <li>Romantic stories</li>
+                    <li>Sci-fi journeys</li>
+                </ol>
+            </div>
+        </div>
+        
+        <!-- Story section -->
+        <div id="stories" class="content-section">
+            <h2 style="color: #1966ff;">Random Story #1: The Flower Maiden</h2>
+            
+            <div class="story-container">
+                <div class="story-text">
+                    <!--The story-->
+                    <p>Once upon a time in a far away land there lived a woman with beauty beyond imagination.
+                    She spent her waking days growing various plants in her magnificent garden.</p>
+                    
+                    <!--Table to list her plants-->
+                    <table class="plant-table">
+                        <tr>
+                            <th>Plant Type</th>
+                            <th>Examples</th>
+                            <th>Growing Season</th>
+                        </tr>
+                        <tr>
+                            <td>Flowers</td>
+                            <td>Roses, Lilies, Tulips</td>
+                            <td>Spring</td>
+                        </tr>
+                        <tr>
+                            <td>Fruits</td>
+                            <td>Apples, Berries, Citrus</td>
+                            <td>Summer</td>
+                        </tr>
+                        <tr>
+                            <td>Vegetables</td>
+                            <td>Carrots, Lettuce, Tomatoes</td>
+                            <td>Fall</td>
+                        </tr>
+                    </table>
+
+                    <p>One day, she started having painful headaches and she started coughing out leaves and petals.</p>
+                </div>
+                
+                <div class="story-image">
+                    <img src="https://images.unsplash.com/photo-1579546929662-711aa81148cf" alt="Magical garden">
+                    <p><i>A magical garden similar to the one tended by the Flower Maiden</i></p>
+                </div>
+            </div>
+            
+            <div class="quote">
+                <i>"Oh good heavens! Why must thy child bear such pain!<br>
+                Why must thou bestow such sorrow on such a poor soul?<br>
+                I pray that thou would bestow me mercy from this cruel fate."</i>
+            </div>
+
+            <p>Upon hearing such a sorrowful prayer filled with sincerity, their Lord spoke to them.</p>
+
+            <div class="divine-quote">
+                <i>"My good child, I have seen your hard work and your sincerity.<br>
+                For your earnest efforts, I shall grant you the mercy you seek.<br> 
+                On the night of the third day, all of your sufferings would come to an end."</i>
+            </div>
+
+            <p>The words her lord spoke before their voice vanished with the howls of the wind.<br> 
+                Bearing with the pain of her suffering, she continued to tend to her garden.<br>
+                The more she moved, the more petals and leaves she coughed up.</p>
+                
+            <p>The morning of the 3rd day arrived and she was unable to rise from her bed.<br> 
+                Flowers and leaves surrounded her body, and the once beautiful maiden vanished. <br> 
+                All that was left of her were the multiple flowers and leaves that beautifully bloomed on her bed.</p>
+
+            <p style="color:rgb(78, 155, 255); text-align: center;"> 
+                <i>°❀⋆.ೃ࿔*:･ The End °❀⋆.ೃ࿔*:･</i>
+            </p>
+        </div>
+        
+        <!-- About section -->
+        <div id="about" class="content-section bg-light">
+            <h2 class="text-primary">About Random Stories</h2>
+            <p>Random Stories is a project dedicated to sharing imaginative tales from various genres. Our mission is to spark creativity and provide enjoyable reading experiences for everyone.</p>
+            
+            <div class="story-container">
+                <div class="story-text">
+                    <h3>Our Story Categories</h3>
+                    <ul>
+                        <li>Fantasy & Adventure</li>
+                        <li>Mystery & Thriller</li>
+                        <li>Romance & Drama</li>
+                        <li>Science Fiction</li>
+                        <li>Horror & Supernatural</li>
+                    </ul>
+                </div>
+                
+                <div class="story-image">
+                    <img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570" alt="Books image">
+                </div>
+            </div>
+            
+            <!-- Another iframe example -->
+            <h3>Visit Our Favorite Book Store</h3>
+            <div class="iframe-container">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3024.5485566258576!2d-74.01586612424924!3d40.705537371393275!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25a1231db6d77%3A0x5c1d6800000e69b9!2sThe%20Strand%20Book%20Store!5e0!3m2!1sen!2sus!4v1691523180779!5m2!1sen!2sus" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>© 2023 Random Stories | <a href="#privacy" style="color: #80bdff;">Privacy Policy</a> | <a href="#terms" style="color: #80bdff;">Terms of Service</a></p>
+            <p>Follow us on: 
+                <a href="#" style="color: #80bdff;">Twitter</a> | 
+                <a href="#" style="color: #80bdff;">Instagram</a> | 
+                <a href="#" style="color: #80bdff;">Facebook</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
